@@ -56,7 +56,7 @@ implemented**.
 | Scan window | **Today + yesterday first**; widen (up to ~7 days) only if no cwd-match found. |
 | Token source | **`last_token_usage`** (per-turn) = current context. Not cumulative `total_token_usage`. |
 | Window size | **Strict parity** — ignore `model_context_window`, no percentage. Output shape identical across hosts. |
-| Field mapping | `cached`→`cache_read`, `cache_write`→`cache_creation`, `input`→`input`, `output`+`reasoning`→`output`. `context_tokens = input + cache_read + cache_creation`. |
+| Field mapping | `cached`→`cache_read`, `cache_write`→`cache_creation`, `output`+`reasoning`→`output`. Codex `cached_input_tokens` is a **subset** of `input_tokens` (source-verified — `TokenUsage::non_cached_input` subtracts it), so shared `input`←`input − cached` (clamped ≥ 0) to stay disjoint like Claude. `context_tokens = input + cache_read + cache_creation`. |
 | Naming | **Rename** package/repo → `context-usage-mcp` (tool stays `get_context_usage`). |
 | Testing | Unit-test Codex parser (normal / older-no-`cache_write` / no-`token_count`-yet / cumulative-vs-last) **+** host-detection (pure fn). Discovery untested. |
 | Distribution | Local build; document Codex registration (`config.toml` `[mcp_servers.*]` / `codex mcp add`); **defer npm**. |
@@ -65,8 +65,9 @@ implemented**.
 Carried over unchanged: single `get_context_usage` tool, structured `{available:false, reason}`
 (never throws) with Codex-specific reason text, JSON text + `structuredContent`.
 
-**Pre-coding verification:** confirm in Codex source whether `cached_input_tokens` is additive to
-`input_tokens` (sum correct) or a subset (double-count risk).
+**Pre-coding verification — RESOLVED (2026-07-20):** Codex `cached_input_tokens` is a *subset* of
+`input_tokens` (confirmed via `TokenUsage::non_cached_input`); the mapping subtracts it (shared
+`input`←`input − cached`) to avoid double-counting. See [Codex internals](/docs/wiki/codex-internals.md).
 
 # Constraints
 

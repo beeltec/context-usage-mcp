@@ -69,22 +69,45 @@ A `token_count` event is an `event_msg` whose payload carries a `TokenUsageInfo`
 - `token_count` was added ~2025-09; fields have already churned — same "internal format" fragility
   risk as the Claude transcript.
 
-**Open verification item (before coding):** whether `cached_input_tokens` is *additive to*
-`input_tokens` (like Claude — sum is correct) or a *subset* (would double-count). Research
-indicates additive/separate; confirm in source.
+**Verified (2026-07-20): `cached_input_tokens` is a SUBSET of `input_tokens`, not additive.**
+Source: `codex-rs/protocol/src/protocol.rs`, `TokenUsage::non_cached_input()`:
+
+```rust
+pub fn non_cached_input(&self) -> i64 {
+    (self.input_tokens - self.cached_input()).max(0)
+}
+pub fn blended_total(&self) -> i64 {
+    (self.non_cached_input() + self.output_tokens.max(0)).max(0)
+}
+```
+
+Codex subtracts `cached_input_tokens` from `input_tokens` to get the genuinely-new input, so
+`input_tokens` already *includes* the cached tokens. This matches OpenAI's Responses API, where
+`input_tokens_details.cached_tokens` is a subset of `input_tokens`. This differs from **Claude**,
+whose Anthropic-API `input_tokens` **excludes** cache-read/cache-creation (its three input fields
+are disjoint).
+
+Consequence: mapping Codex `input_tokens` straight to the shared `input_tokens` and then summing
+`input + cache_read + cache_creation` would **double-count** the cached tokens. We therefore map the
+shared `input_tokens` to Codex's **non-cached** input (`input_tokens − cached_input_tokens`,
+clamped ≥ 0), keeping the shared breakdown fields disjoint exactly like Claude's.
 
 # Field mapping to the shared output shape
 
+Shared breakdown fields are **disjoint** (parity with Claude): shared `input_tokens` is *non-cached*
+input, so the three input fields never overlap and sum cleanly into `context_tokens`.
+
 | Codex (`last_token_usage`) | Shared breakdown field |
 |---|---|
-| `input_tokens` | `input_tokens` |
+| `input_tokens − cached_input_tokens` (clamped ≥ 0) | `input_tokens` |
 | `cached_input_tokens` | `cache_read_input_tokens` |
-| `cache_write_input_tokens` | `cache_creation_input_tokens` |
+| `cache_write_input_tokens` (absent → 0) | `cache_creation_input_tokens` |
 | `output_tokens` + `reasoning_output_tokens` | `output_tokens` |
 
 `context_tokens = input_tokens + cache_read_input_tokens + cache_creation_input_tokens`
-(same formula as Claude; output/reasoning excluded). `model_context_window` is **ignored** (strict
-output-shape parity with the Claude host — no percentage).
+= `(codex_input − cached) + cached + cache_write` = `codex_input + cache_write` — no double-count,
+same disjoint-sum formula as Claude; output/reasoning excluded. `model_context_window` is
+**ignored** (strict output-shape parity with the Claude host — no percentage).
 
 # Citations
 
