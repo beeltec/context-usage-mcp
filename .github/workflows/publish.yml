@@ -21,7 +21,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # Node >= 21 required: the test runner's glob patterns (test/**/*.test.ts,
+          # used by prepublishOnly) are unsupported on Node 20. Also clears the
+          # Node 20 runner deprecation warning.
+          node-version: "22"
           registry-url: https://registry.npmjs.org
 
       # Trusted publishing (OIDC) requires npm >= 11.5.1, newer than Node 20's bundled npm.
