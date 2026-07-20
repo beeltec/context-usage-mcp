@@ -82,15 +82,20 @@ becomes installable and runnable via `npx`, wired into Claude Code / Codex witho
 | Bin name | Keep the short **`context-usage-mcp`** executable (bin key differs from the scoped package name). |
 | Build/packaging | `dist/` stays **gitignored**; `files: ["dist"]` keeps the tarball lean. |
 | Build gate | Add **`prepublishOnly`** = typecheck → tests → build, so a broken build can't be published. |
-| Publish method | **GitHub Actions**, publishing with **`--provenance`** (`id-token: write`) + `--access public` (required for scoped). |
+| Publish method | **GitHub Actions** with **Trusted Publishing (OIDC)** — no token secret; `id-token: write` + provenance (auto). See [npm publishing](/docs/wiki/npm-publishing.md). |
 | Release trigger | **GitHub Release published** (release notes as the gate; the release creates the tag). |
 | Version guard | Workflow **fails if the release tag ≠ `package.json` version**. |
-| CI runtime | Node 20. |
+| CI runtime | Node 20, with `npm i -g npm@latest` (OIDC needs npm ≥ 11.5.1). |
 | First release | Publish current **0.1.0** (tag `v0.1.0`). |
 | Docs | README + Claude Code/Codex MCP config examples: **npx is the primary path**; short "from source / local dev" note kept below. |
 
-**Manual steps (out of the agent's reach):** create the npm automation token, add it as the
-`NPM_TOKEN` repo secret, run any first-time `npm login`, and cut the first GitHub Release.
+**Auth choice (updated during implementation 2026-07-20):** switched from an `NPM_TOKEN` automation
+secret to **Trusted Publishing / OIDC** (GA since 2025-07), which needs no long-lived secret and
+emits provenance by default.
+
+**Manual steps (out of the agent's reach):** configure a **trusted publisher** on npmjs.com for this
+repo + workflow file (`publish.yml`), and cut the first GitHub Release. A brand-new package name may
+need one initial manual/token publish before OIDC applies — see [npm publishing](/docs/wiki/npm-publishing.md).
 
 # Constraints
 
