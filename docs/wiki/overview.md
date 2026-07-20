@@ -70,6 +70,28 @@ Carried over unchanged: single `get_context_usage` tool, structured `{available:
 `input_tokens` (confirmed via `TokenUsage::non_cached_input`); the mapping subtracts it (shared
 `input`←`input − cached`) to avoid double-counting. See [Codex internals](/docs/wiki/codex-internals.md).
 
+# Distribution & publishing — npx (decided 2026-07-20)
+
+Supersedes the earlier "may publish later" / "defer npm" stance in the tables above. The MCP
+becomes installable and runnable via `npx`, wired into Claude Code / Codex without a local checkout.
+
+| Area | Decision |
+|------|----------|
+| Distribution | **Publish to public npm.** Consumed via `npx -y @beeltec/context-usage-mcp`. |
+| Package name | **Scoped `@beeltec/context-usage-mcp`** (unscoped `context-usage-mcp` is free but scoping asserts ownership). |
+| Bin name | Keep the short **`context-usage-mcp`** executable (bin key differs from the scoped package name). |
+| Build/packaging | `dist/` stays **gitignored**; `files: ["dist"]` keeps the tarball lean. |
+| Build gate | Add **`prepublishOnly`** = typecheck → tests → build, so a broken build can't be published. |
+| Publish method | **GitHub Actions**, publishing with **`--provenance`** (`id-token: write`) + `--access public` (required for scoped). |
+| Release trigger | **GitHub Release published** (release notes as the gate; the release creates the tag). |
+| Version guard | Workflow **fails if the release tag ≠ `package.json` version**. |
+| CI runtime | Node 20. |
+| First release | Publish current **0.1.0** (tag `v0.1.0`). |
+| Docs | README + Claude Code/Codex MCP config examples: **npx is the primary path**; short "from source / local dev" note kept below. |
+
+**Manual steps (out of the agent's reach):** create the npm automation token, add it as the
+`NPM_TOKEN` repo secret, run any first-time `npm login`, and cut the first GitHub Release.
+
 # Constraints
 
 - Strict TypeScript, no `any` (per user global guidelines).

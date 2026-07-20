@@ -32,6 +32,16 @@ zod **raw shapes** (not `z.object`), and `outputSchema` must be an object — so
 is flattened to one object with nullable fields, with `StructuredReading` derived via `z.infer` to
 avoid drift. Registered at user scope; verified live against this session's transcript.
 
+## 2026-07-20 — npx distribution decided (not yet implemented)
+
+Ran a `/discuss` decision tree on making the MCP callable via `npx`. Decided to **publish to public
+npm** as the scoped **`@beeltec/context-usage-mcp`** (short `context-usage-mcp` bin), with a
+**`prepublishOnly`** typecheck→test→build gate, published from **GitHub Actions on Release
+published** with **`--provenance` + `--access public`** and a tag-vs-`package.json` version guard,
+first release at 0.1.0. README/config examples move to **npx-primary**. Supersedes the earlier
+"defer npm" stance. Manual prerequisites: npm token → `NPM_TOKEN` secret, and cutting the first
+Release. All decisions recorded in [overview](/docs/wiki/overview.md). No implementation yet.
+
 ## 2026-07-20 — Codex port landed
 
 Ported the server to also run under **OpenAI Codex CLI** across tasks 001–005 (docs/tasks/
