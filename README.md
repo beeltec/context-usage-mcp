@@ -37,13 +37,25 @@ working directory set to the session's project dir. So the server uses `process.
 Output is `output_tokens + reasoning_output_tokens`. The Codex `model_context_window` is ignored
 (raw counts only, strict parity with the Claude host).
 
-## Install
+## Install & run
+
+Run the published package directly with `npx` — no clone or build required:
 
 ```bash
-npm install
-npm run build          # tsc → dist/, sets +x on dist/index.js
-npm test               # parser unit tests
+npx -y @beeltec/context-usage-mcp
 ```
+
+This is the recommended way to wire it into a host (see the registration sections below). The `-y`
+flag skips the install prompt on first run.
+
+> **Run from source (local dev)** — for hacking on the server itself:
+> ```bash
+> npm install
+> npm run build          # tsc → dist/, sets +x on dist/index.js
+> npm test               # parser unit tests
+> ```
+> Then register the absolute path to `dist/index.js` (see the "from source" note in each
+> registration section).
 
 ## Host detection
 
@@ -54,11 +66,16 @@ The server auto-detects its host: `CLAUDE_PROJECT_DIR` set → Claude Code; else
 ## Register with Claude Code (user scope)
 
 ```bash
-claude mcp add --scope user context-length -- node /Users/beeltec/workspace/test/claude-context-length-mcp/dist/index.js
+claude mcp add --scope user context-usage -- npx -y @beeltec/context-usage-mcp
 ```
 
-Use the absolute path to `dist/index.js` in this repo. Verify with `claude mcp list`. Because MCP
-servers are loaded at session start, start a **new** Claude Code session before calling the tool.
+Verify with `claude mcp list`. Because MCP servers are loaded at session start, start a **new**
+Claude Code session before calling the tool.
+
+> **From source:** register the absolute path to this repo's built binary instead:
+> ```bash
+> claude mcp add --scope user context-usage -- node /absolute/path/to/dist/index.js
+> ```
 
 ## Register with Codex CLI
 
@@ -66,25 +83,29 @@ Add an entry to `~/.codex/config.toml` (root movable with `CODEX_HOME`):
 
 ```toml
 [mcp_servers.context-usage]
-command = "node"
-args = ["/Users/beeltec/workspace/test/claude-context-length-mcp/dist/index.js"]
+command = "npx"
+args = ["-y", "@beeltec/context-usage-mcp"]
 ```
 
 Or use the CLI equivalent:
 
 ```bash
-codex mcp add context-usage -- node /Users/beeltec/workspace/test/claude-context-length-mcp/dist/index.js
+codex mcp add context-usage -- npx -y @beeltec/context-usage-mcp
 ```
 
-Use the absolute path to `dist/index.js` in this repo. **Do not set a custom `cwd` for the server**:
-Codex passes no project/session identifier, so discovery relies on the server inheriting the
-session's working directory via `process.cwd()`. Setting `cwd` breaks the cwd-match. MCP servers
-load at session start, so start a **new** Codex session before calling the tool.
+**Do not set a custom `cwd` for the server**: Codex passes no project/session identifier, so
+discovery relies on the server inheriting the session's working directory via `process.cwd()`.
+Setting `cwd` breaks the cwd-match. MCP servers load at session start, so start a **new** Codex
+session before calling the tool.
+
+> **From source:** use `command = "node"` with `args = ["/absolute/path/to/dist/index.js"]` (or
+> `codex mcp add context-usage -- node /absolute/path/to/dist/index.js`).
 
 ## Distribution
 
-Local build only for now (run `npm run build` and register the absolute `dist/index.js` path).
-Publishing to npm is deferred.
+Published to npm as [`@beeltec/context-usage-mcp`](https://www.npmjs.com/package/@beeltec/context-usage-mcp)
+and run via `npx` (see [Install & run](#install--run)). Releases are published from CI with
+provenance on each GitHub Release; running from a local build is also supported for development.
 
 ## The tool: `get_context_usage`
 
