@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Reading, Usage } from "./types.js";
+import { contextTokens, type Reading, type Usage } from "./types.js";
 
 /**
  * Usage sub-fields are all optional; missing ones default to 0. Extra fields are tolerated.
@@ -95,14 +95,10 @@ export function parseReading(contents: string): Reading {
 
     const line = parsed.data;
     const breakdown = toBreakdown(line.message.usage);
-    const context_tokens =
-      breakdown.input_tokens +
-      breakdown.cache_creation_input_tokens +
-      breakdown.cache_read_input_tokens;
 
     return {
       available: true,
-      context_tokens,
+      context_tokens: contextTokens(breakdown),
       breakdown,
       session_id: line.sessionId ?? null,
       model: line.message.model ?? null,

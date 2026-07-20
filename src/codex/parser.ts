@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Reading, Usage } from "../types.js";
+import { contextTokens, type Reading, type Usage } from "../types.js";
 
 /**
  * Codex `TokenUsage` sub-fields — all optional, missing ones default to 0, extras tolerated.
@@ -101,7 +101,10 @@ export function parseReading(contents: string): Reading {
   }
 
   if (parsed.length === 0) {
-    return { available: false, reason: "rollout file is empty" };
+    return {
+      available: false,
+      reason: "rollout file is empty or contains no parseable lines",
+    };
   }
 
   // Backward scan for the last token_count event with usage info.
@@ -142,14 +145,10 @@ export function parseReading(contents: string): Reading {
   }
 
   const breakdown = toBreakdown(chosen.usage);
-  const context_tokens =
-    breakdown.input_tokens +
-    breakdown.cache_creation_input_tokens +
-    breakdown.cache_read_input_tokens;
 
   return {
     available: true,
-    context_tokens,
+    context_tokens: contextTokens(breakdown),
     breakdown,
     session_id: findSessionId(parsed),
     model: findModel(parsed),

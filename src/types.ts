@@ -10,6 +10,19 @@ export type Usage = {
 };
 
 /**
+ * The context total is the sum of the three (disjoint) input fields; output is excluded because it
+ * is not fed back into the model's context. Every host adapter produces a disjoint breakdown, so
+ * this single definition is shared to keep the formula from drifting between parsers.
+ */
+export function contextTokens(breakdown: Usage): number {
+  return (
+    breakdown.input_tokens +
+    breakdown.cache_creation_input_tokens +
+    breakdown.cache_read_input_tokens
+  );
+}
+
+/**
  * The result of reading a session transcript.
  *
  * `context_tokens` is `input_tokens + cache_creation_input_tokens + cache_read_input_tokens`
