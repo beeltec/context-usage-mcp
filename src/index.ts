@@ -1,11 +1,12 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { parseReading } from "./parser.js";
-import { findFreshestTranscript } from "./session.js";
+import { claudeAdapter } from "./claude/adapter.js";
+import { codexAdapter } from "./codex/adapter.js";
+import { detectHost, type Host, type HostAdapter } from "./host.js";
 import type { Reading, Usage } from "./types.js";
+import { errorMessage } from "./util.js";
 
 const breakdownSchema = z.object({
   input_tokens: z.number(),
@@ -57,44 +58,29 @@ function toStructured(reading: Reading): StructuredReading {
   };
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
+/**
+ * Map a detected host to its adapter. The `never` fallthrough forces every member of the `Host`
+ * union to be handled — adding a host without an adapter is a compile error.
+ */
+function selectAdapter(host: Host): HostAdapter {
+  switch (host) {
+    case "claude":
+      return claudeAdapter;
+    case "codex":
+      return codexAdapter;
+    default: {
+      const exhaustive: never = host;
+      return exhaustive;
+    }
+  }
 }
 
 /**
- * Resolve the freshest transcript, read it, and parse it into a `Reading`. Every failure mode —
- * file selection, IO, parsing — is converted into a structured unavailable result; this never
- * throws, so the tool cannot crash the agent's flow.
+ * Detect the host and delegate to its adapter. The adapter contract guarantees no throw, so this
+ * cannot crash the agent's flow.
  */
 function readCurrentUsage(): Reading {
-  let path: string | null;
-  try {
-    path = findFreshestTranscript();
-  } catch (error) {
-    return {
-      available: false,
-      reason: `failed to locate transcript: ${errorMessage(error)}`,
-    };
-  }
-
-  if (path === null) {
-    return {
-      available: false,
-      reason: "no transcript file found for the current project",
-    };
-  }
-
-  let contents: string;
-  try {
-    contents = readFileSync(path, "utf8");
-  } catch (error) {
-    return {
-      available: false,
-      reason: `failed to read transcript: ${errorMessage(error)}`,
-    };
-  }
-
-  return parseReading(contents);
+  return selectAdapter(detectHost()).readCurrentUsage();
 }
 
 const server = new McpServer({
@@ -107,12 +93,12 @@ server.registerTool(
   {
     title: "Get context usage",
     description:
-      "Reports the current Claude Code session's raw token usage, read directly from the " +
-      "session transcript. Returns raw counts only — context_tokens (input + cache_creation + " +
-      "cache_read) plus a full breakdown and session metadata (session_id, model, timestamp) — " +
-      "with no percentage or context-window detection. May be unavailable early in a session " +
-      "before the first assistant response; then it returns { available: false, reason } " +
-      "instead of failing.",
+      "Reports the current session's raw token usage, read directly from the host's own session " +
+      "transcript/rollout (auto-detected: Claude Code or OpenAI Codex CLI). Returns raw counts " +
+      "only — context_tokens (input + cache_creation + cache_read) plus a full breakdown and " +
+      "session metadata (session_id, model, timestamp) — with no percentage or context-window " +
+      "detection. May be unavailable early in a session before the first model response; then it " +
+      "returns { available: false, reason } instead of failing.",
     inputSchema: {},
     outputSchema: outputSchema.shape,
   },

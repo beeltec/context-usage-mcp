@@ -1,11 +1,11 @@
 {
-  "name": "claude-context-length-mcp",
+  "name": "context-usage-mcp",
   "version": "0.1.0",
-  "description": "MCP server exposing get_context_usage, reporting the current Claude Code session's raw token usage from its transcript.",
+  "description": "MCP server exposing get_context_usage, reporting the current session's raw token usage from its transcript/rollout. Supports Claude Code and OpenAI Codex CLI.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "claude-context-length-mcp": "dist/index.js"
+    "context-usage-mcp": "dist/index.js"
   },
   "files": [
     "dist"
