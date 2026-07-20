@@ -1,5 +1,5 @@
 {
-  "name": "context-usage-mcp",
+  "name": "@beeltec/context-usage-mcp",
   "version": "0.1.0",
   "description": "MCP server exposing get_context_usage, reporting the current session's raw token usage from its transcript/rollout. Supports Claude Code and OpenAI Codex CLI.",
   "type": "module",
@@ -10,10 +10,30 @@
   "files": [
     "dist"
   ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude-code",
+    "codex",
+    "context-usage",
+    "tokens"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beeltec/context-usage-mcp.git"
+  },
+  "homepage": "https://github.com/beeltec/context-usage-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/beeltec/context-usage-mcp/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc && chmod +x dist/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test \"test/**/*.test.ts\""
+    "test": "node --import tsx --test \"test/**/*.test.ts\"",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "engines": {
     "node": ">=18"
