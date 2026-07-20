@@ -42,6 +42,32 @@ the server reads the session **transcript JSONL directly**:
 | Testing | Unit-test the parser only, against fixture JSONL (normal / post-compaction / no-usage) |
 | Build tooling | npm + `tsc`, strict + `noUncheckedIndexedAccess`; Node built-in test runner + tsx |
 
+# Codex support (planned)
+
+Extend the same server to also run under **OpenAI Codex CLI**, whose internals differ (see
+[Codex internals](/docs/wiki/codex-internals.md)). Decided in the 2026-07-20 discussion; **not yet
+implemented**.
+
+| Area | Decision |
+|------|----------|
+| Packaging | **One codebase, host-adapter layer.** Shared `index.ts` MCP wiring; host-specific discovery + parser behind a common interface. |
+| Host detection | **Auto-detect + override.** `CLAUDE_PROJECT_DIR` → Claude; `CODEX_HOME`/`~/.codex/sessions` → Codex. Explicit flag/env override wins. |
+| Session pick (Codex) | **cwd-match + freshest, bounded scan** of recent day-folders. |
+| Scan window | **Today + yesterday first**; widen (up to ~7 days) only if no cwd-match found. |
+| Token source | **`last_token_usage`** (per-turn) = current context. Not cumulative `total_token_usage`. |
+| Window size | **Strict parity** — ignore `model_context_window`, no percentage. Output shape identical across hosts. |
+| Field mapping | `cached`→`cache_read`, `cache_write`→`cache_creation`, `input`→`input`, `output`+`reasoning`→`output`. `context_tokens = input + cache_read + cache_creation`. |
+| Naming | **Rename** package/repo → `context-usage-mcp` (tool stays `get_context_usage`). |
+| Testing | Unit-test Codex parser (normal / older-no-`cache_write` / no-`token_count`-yet / cumulative-vs-last) **+** host-detection (pure fn). Discovery untested. |
+| Distribution | Local build; document Codex registration (`config.toml` `[mcp_servers.*]` / `codex mcp add`); **defer npm**. |
+| Project dir | **No override** — rely on `process.cwd()`; document "don't set a custom server `cwd`." |
+
+Carried over unchanged: single `get_context_usage` tool, structured `{available:false, reason}`
+(never throws) with Codex-specific reason text, JSON text + `structuredContent`.
+
+**Pre-coding verification:** confirm in Codex source whether `cached_input_tokens` is additive to
+`input_tokens` (sum correct) or a subset (double-count risk).
+
 # Constraints
 
 - Strict TypeScript, no `any` (per user global guidelines).

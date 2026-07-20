@@ -1,9 +1,10 @@
-# claude-context-length-mcp
+# context-usage-mcp
 
 A tiny [Model Context Protocol](https://modelcontextprotocol.io) server (TypeScript/Node, stdio)
-that exposes a single tool, **`get_context_usage`**, reporting the current Claude Code session's
-**raw token usage** — so an agent can check after each task whether context has grown large and
-branch its behavior on an absolute threshold.
+that exposes a single tool, **`get_context_usage`**, reporting the current session's **raw token
+usage** — so an agent can check after each task whether context has grown large and branch its
+behavior on an absolute threshold. Runs under both **Claude Code** and **OpenAI Codex CLI**, reading
+each host's own session transcript/rollout behind an auto-detected host-adapter layer.
 
 ## What it does
 
