@@ -15,4 +15,5 @@ behave differently.
 
 - [Overview & Decisions](/docs/wiki/overview.md) — goal, architecture, and all locked decisions.
 - [Claude Code Internals](/docs/wiki/claude-code-internals.md) — how session/token data is (and isn't) exposed.
+- [MCP TypeScript SDK — Server API](/docs/wiki/mcp-sdk-typescript.md) — registerTool, raw-shape schemas, structured output, stdio.
 - [Log](/docs/wiki/log.md) — chronological decision history.
