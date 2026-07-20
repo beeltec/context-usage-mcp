@@ -17,9 +17,9 @@ jobs:
       contents: read
       id-token: write # required for OIDC trusted publishing + provenance
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # Node >= 21 required: the test runner's glob patterns (test/**/*.test.ts,
           # used by prepublishOnly) are unsupported on Node 20. Also clears the
@@ -27,7 +27,7 @@ jobs:
           node-version: "22"
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing (OIDC) requires npm >= 11.5.1, newer than Node 20's bundled npm.
+      # Trusted publishing (OIDC) requires npm >= 11.5.1, newer than Node 22's bundled npm.
       - run: npm install -g npm@^11.5.1
 
       - run: npm ci
