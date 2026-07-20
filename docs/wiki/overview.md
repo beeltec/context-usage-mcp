@@ -70,6 +70,33 @@ Carried over unchanged: single `get_context_usage` tool, structured `{available:
 `input_tokens` (confirmed via `TokenUsage::non_cached_input`); the mapping subtracts it (shared
 `input`←`input − cached`) to avoid double-counting. See [Codex internals](/docs/wiki/codex-internals.md).
 
+# Distribution & publishing — npx (decided 2026-07-20)
+
+Supersedes the earlier "may publish later" / "defer npm" stance in the tables above. The MCP
+becomes installable and runnable via `npx`, wired into Claude Code / Codex without a local checkout.
+
+| Area | Decision |
+|------|----------|
+| Distribution | **Publish to public npm.** Consumed via `npx -y @beeltec/context-usage-mcp`. |
+| Package name | **Scoped `@beeltec/context-usage-mcp`** (unscoped `context-usage-mcp` is free but scoping asserts ownership). |
+| Bin name | Keep the short **`context-usage-mcp`** executable (bin key differs from the scoped package name). |
+| Build/packaging | `dist/` stays **gitignored**; `files: ["dist"]` keeps the tarball lean. |
+| Build gate | Add **`prepublishOnly`** = typecheck → tests → build, so a broken build can't be published. |
+| Publish method | **GitHub Actions** with **Trusted Publishing (OIDC)** — no token secret; `id-token: write` + provenance (auto). See [npm publishing](/docs/wiki/npm-publishing.md). |
+| Release trigger | **GitHub Release published** (release notes as the gate; the release creates the tag). |
+| Version guard | Workflow **fails if the release tag ≠ `package.json` version**. |
+| CI runtime | Node 20, with `npm i -g npm@latest` (OIDC needs npm ≥ 11.5.1). |
+| First release | Publish current **0.1.0** (tag `v0.1.0`). |
+| Docs | README + Claude Code/Codex MCP config examples: **npx is the primary path**; short "from source / local dev" note kept below. |
+
+**Auth choice (updated during implementation 2026-07-20):** switched from an `NPM_TOKEN` automation
+secret to **Trusted Publishing / OIDC** (GA since 2025-07), which needs no long-lived secret and
+emits provenance by default.
+
+**Manual steps (out of the agent's reach):** configure a **trusted publisher** on npmjs.com for this
+repo + workflow file (`publish.yml`), and cut the first GitHub Release. A brand-new package name may
+need one initial manual/token publish before OIDC applies — see [npm publishing](/docs/wiki/npm-publishing.md).
+
 # Constraints
 
 - Strict TypeScript, no `any` (per user global guidelines).

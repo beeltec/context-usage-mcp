@@ -17,4 +17,5 @@ threshold and behave differently.
 - [Claude Code Internals](/docs/wiki/claude-code-internals.md) — how session/token data is (and isn't) exposed.
 - [Codex Internals](/docs/wiki/codex-internals.md) — Codex rollout layout, `token_count` schema, and what MCP servers can see (planned port).
 - [MCP TypeScript SDK — Server API](/docs/wiki/mcp-sdk-typescript.md) — registerTool, raw-shape schemas, structured output, stdio.
+- [npm publishing & provenance](/docs/wiki/npm-publishing.md) — scoped publish, provenance, token vs OIDC trusted publishing.
 - [Log](/docs/wiki/log.md) — chronological decision history.

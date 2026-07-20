@@ -1,0 +1,42 @@
+# Publishes @beeltec/context-usage-mcp to npm on a published GitHub Release.
+#
+# Auth: npm Trusted Publishing (OIDC) — no NPM_TOKEN secret. Provenance is emitted
+# automatically. Manual prerequisites (once): configure a trusted publisher on
+# npmjs.com for this repository + this workflow file (publish.yml), and keep the
+# repository public (provenance is not supported from private repos).
+name: publish
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for OIDC trusted publishing + provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing (OIDC) requires npm >= 11.5.1, newer than Node 20's bundled npm.
+      - run: npm install -g npm@^11.5.1
+
+      - run: npm ci
+
+      - name: Verify tag matches package.json version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::Release tag ($tag) does not match package.json version ($pkg)"
+            exit 1
+          fi
+
+      # OIDC provides auth and provenance automatically; publishConfig sets public access.
+      - run: npm publish
