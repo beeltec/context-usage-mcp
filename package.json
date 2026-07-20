@@ -1,6 +1,6 @@
 {
   "name": "@beeltec/context-usage-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server exposing get_context_usage, reporting the current session's raw token usage from its transcript/rollout. Supports Claude Code and OpenAI Codex CLI.",
   "type": "module",
   "main": "dist/index.js",

@@ -86,7 +86,7 @@ becomes installable and runnable via `npx`, wired into Claude Code / Codex witho
 | Release trigger | **GitHub Release published** (release notes as the gate; the release creates the tag). |
 | Version guard | Workflow **fails if the release tag ≠ `package.json` version**. |
 | CI runtime | Node 20, with `npm i -g npm@latest` (OIDC needs npm ≥ 11.5.1). |
-| First release | Publish current **0.1.0** (tag `v0.1.0`). |
+| First release | First **CI** release is **0.1.1** (tag `v0.1.1`); 0.1.0 is the manual bootstrap publish that creates the package so a trusted publisher can be configured (no provenance badge). |
 | Docs | README + Claude Code/Codex MCP config examples: **npx is the primary path**; short "from source / local dev" note kept below. |
 
 **Auth choice (updated during implementation 2026-07-20):** switched from an `NPM_TOKEN` automation
