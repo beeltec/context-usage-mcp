@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { claudeAdapter } from "./claude/adapter.js";
+import { codexAdapter } from "./codex/adapter.js";
 import { detectHost, type Host, type HostAdapter } from "./host.js";
 import type { Reading, Usage } from "./types.js";
 import { errorMessage } from "./util.js";
@@ -58,17 +59,6 @@ function toStructured(reading: Reading): StructuredReading {
 }
 
 /**
- * Placeholder Codex adapter. The real implementation (discovery + rollout parser) is wired in
- * task 005; until then `"codex"` resolves here so dispatch stays exhaustive and never throws.
- */
-const codexAdapterStub: HostAdapter = {
-  readCurrentUsage: () => ({
-    available: false,
-    reason: "codex host adapter is not yet implemented",
-  }),
-};
-
-/**
  * Map a detected host to its adapter. The `never` fallthrough forces every member of the `Host`
  * union to be handled — adding a host without an adapter is a compile error.
  */
@@ -77,7 +67,7 @@ function selectAdapter(host: Host): HostAdapter {
     case "claude":
       return claudeAdapter;
     case "codex":
-      return codexAdapterStub;
+      return codexAdapter;
     default: {
       const exhaustive: never = host;
       return exhaustive;
@@ -103,12 +93,12 @@ server.registerTool(
   {
     title: "Get context usage",
     description:
-      "Reports the current Claude Code session's raw token usage, read directly from the " +
-      "session transcript. Returns raw counts only — context_tokens (input + cache_creation + " +
-      "cache_read) plus a full breakdown and session metadata (session_id, model, timestamp) — " +
-      "with no percentage or context-window detection. May be unavailable early in a session " +
-      "before the first assistant response; then it returns { available: false, reason } " +
-      "instead of failing.",
+      "Reports the current session's raw token usage, read directly from the host's own session " +
+      "transcript/rollout (auto-detected: Claude Code or OpenAI Codex CLI). Returns raw counts " +
+      "only — context_tokens (input + cache_creation + cache_read) plus a full breakdown and " +
+      "session metadata (session_id, model, timestamp) — with no percentage or context-window " +
+      "detection. May be unavailable early in a session before the first model response; then it " +
+      "returns { available: false, reason } instead of failing.",
     inputSchema: {},
     outputSchema: outputSchema.shape,
   },

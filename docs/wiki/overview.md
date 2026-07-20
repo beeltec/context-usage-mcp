@@ -42,11 +42,12 @@ the server reads the session **transcript JSONL directly**:
 | Testing | Unit-test the parser only, against fixture JSONL (normal / post-compaction / no-usage) |
 | Build tooling | npm + `tsc`, strict + `noUncheckedIndexedAccess`; Node built-in test runner + tsx |
 
-# Codex support (planned)
+# Codex support (implemented)
 
-Extend the same server to also run under **OpenAI Codex CLI**, whose internals differ (see
-[Codex internals](/docs/wiki/codex-internals.md)). Decided in the 2026-07-20 discussion; **not yet
-implemented**.
+The same server also runs under **OpenAI Codex CLI**, whose internals differ (see
+[Codex internals](/docs/wiki/codex-internals.md)). Decided in the 2026-07-20 discussion and
+**implemented** the same day behind a host-adapter layer (`src/host.ts`, `src/codex/`); verified
+live against a real Codex CLI 0.144.6 session.
 
 | Area | Decision |
 |------|----------|
