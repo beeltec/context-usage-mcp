@@ -7,37 +7,32 @@ import { parseReading } from "./parser.js";
 import { findFreshestTranscript } from "./session.js";
 import type { Reading, Usage } from "./types.js";
 
+const breakdownSchema = z.object({
+  input_tokens: z.number(),
+  cache_creation_input_tokens: z.number(),
+  cache_read_input_tokens: z.number(),
+  output_tokens: z.number(),
+}) satisfies z.ZodType<Usage>;
+
 /**
  * MCP `outputSchema` must be an object schema, so the `Reading` union is flattened into a single
  * object: on the unavailable path the numeric fields are `null` and `reason` is set; on the
  * available path `reason` is `null`. This matches the locked "null numbers when unavailable" shape.
+ *
+ * This zod object is the single source of truth: its `.shape` is handed to `registerTool` as the
+ * output schema, and `StructuredReading` is derived from it via `z.infer` so the two cannot drift.
  */
-const outputShape = {
+const outputSchema = z.object({
   available: z.boolean(),
   context_tokens: z.number().nullable(),
-  breakdown: z
-    .object({
-      input_tokens: z.number(),
-      cache_creation_input_tokens: z.number(),
-      cache_read_input_tokens: z.number(),
-      output_tokens: z.number(),
-    })
-    .nullable(),
+  breakdown: breakdownSchema.nullable(),
   session_id: z.string().nullable(),
   model: z.string().nullable(),
   timestamp: z.string().nullable(),
   reason: z.string().nullable(),
-};
+});
 
-type StructuredReading = {
-  readonly available: boolean;
-  readonly context_tokens: number | null;
-  readonly breakdown: Usage | null;
-  readonly session_id: string | null;
-  readonly model: string | null;
-  readonly timestamp: string | null;
-  readonly reason: string | null;
-};
+type StructuredReading = z.infer<typeof outputSchema>;
 
 function toStructured(reading: Reading): StructuredReading {
   if (reading.available) {
@@ -119,7 +114,7 @@ server.registerTool(
       "before the first assistant response; then it returns { available: false, reason } " +
       "instead of failing.",
     inputSchema: {},
-    outputSchema: outputShape,
+    outputSchema: outputSchema.shape,
   },
   async () => {
     const structured = toStructured(readCurrentUsage());
