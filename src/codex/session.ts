@@ -37,8 +37,9 @@ function normalizeDir(dir: string): string {
 const NEWLINE = 0x0a;
 const CHUNK_BYTES = 65_536;
 /**
- * Cap on how far we read looking for the first newline. A `session_meta` line can embed sizable
- * instructions, so allow up to 1 MiB before giving up (defensive against an unterminated file).
+ * Soft cap on how far we read looking for the first newline (checked per chunk, so it may overshoot
+ * by up to one chunk). A `session_meta` line can embed sizable instructions, so allow ~1 MiB before
+ * giving up (defensive against an unterminated file).
  */
 const MAX_FIRST_LINE_BYTES = 1_048_576;
 
@@ -86,6 +87,8 @@ function prop(value: unknown, key: string): unknown {
   if (typeof value !== "object" || value === null) {
     return undefined;
   }
+  // Safe: `value` is narrowed to a non-null object above, and string-indexing any object yields
+  // `unknown` (never widened to `any`); the result is treated as `unknown` by all callers.
   return (value as Readonly<Record<string, unknown>>)[key];
 }
 
