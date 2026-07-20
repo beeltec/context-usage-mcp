@@ -5,6 +5,7 @@ import { z } from "zod";
 import { claudeAdapter } from "./claude/adapter.js";
 import { detectHost, type Host, type HostAdapter } from "./host.js";
 import type { Reading, Usage } from "./types.js";
+import { errorMessage } from "./util.js";
 
 const breakdownSchema = z.object({
   input_tokens: z.number(),
@@ -54,10 +55,6 @@ function toStructured(reading: Reading): StructuredReading {
     timestamp: null,
     reason: reading.reason,
   };
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
 }
 
 /**

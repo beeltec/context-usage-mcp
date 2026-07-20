@@ -3,10 +3,7 @@ import type { HostAdapter } from "../host.js";
 import type { Reading } from "../types.js";
 import { parseReading } from "../parser.js";
 import { findFreshestTranscript } from "../session.js";
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
+import { errorMessage } from "../util.js";
 
 /**
  * Claude Code host adapter: resolve the freshest transcript, read it, and parse it into a
