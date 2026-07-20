@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "code-review": {
+      "source": "beeltec/skills",
+      "sourceType": "github",
+      "skillPath": "skills/workflows/code-review/SKILL.md",
+      "computedHash": "b4436b6a15e74d9477c4b1caeef19edb5e97a9b54f13eb33830baff0e8f9d571"
+    },
+    "discuss": {
+      "source": "beeltec/skills",
+      "sourceType": "github",
+      "skillPath": "skills/planning/discuss/SKILL.md",
+      "computedHash": "21def7951c245c437b1e8e2cc88f1e8323fc5cab3d5338551cb14239549ebfc9"
+    },
+    "implement": {
+      "source": "beeltec/skills",
+      "sourceType": "github",
+      "skillPath": "skills/workflows/implement/SKILL.md",
+      "computedHash": "dac282a912df6bcf4c90b38319b79204e58f0abe03b7bfb4459925cb77682598"
+    },
+    "to-tasks": {
+      "source": "beeltec/skills",
+      "sourceType": "github",
+      "skillPath": "skills/planning/to-tasks/SKILL.md",
+      "computedHash": "6b08337ed527dfed27a1b79b89131e1ca27d8bc5a7ec5b50099e9b9c8c6b3b67"
+    },
+    "wiki": {
+      "source": "beeltec/skills",
+      "sourceType": "github",
+      "skillPath": "skills/planning/wiki/SKILL.md",
+      "computedHash": "c40266ee0afc6b12d7a8fa6893721200c5966115acd865fd81e683eaa9f1f9d8"
+    }
+  }
+}
